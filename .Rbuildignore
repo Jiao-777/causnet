@@ -10,3 +10,5 @@
 ^\.github$
 ^\.positai$
 ^\.claude$
+^dev$
+^CHANGES_DETAILED\.md$
