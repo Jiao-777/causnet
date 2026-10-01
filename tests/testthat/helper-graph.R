@@ -13,3 +13,14 @@ is_dag <- function(net) {
   }
   TRUE
 }
+
+# Three pairwise dependent variables (V1 -> V2, V1 -> V3, V2 -> V3); the best
+# network is a complete DAG in which one node has two parents.
+triangle_data <- function() {
+  set.seed(3)
+  n <- 300
+  d <- data.frame(V1 = rnorm(n))
+  d$V2 <- 0.5 * d$V1 + rnorm(n)
+  d$V3 <- 0.5 * d$V1 + 0.5 * d$V2 + rnorm(n)
+  d
+}
