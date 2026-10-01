@@ -10,7 +10,7 @@
 #' their candidate parents outside the reached set are dropped.
 #'
 #' @param possible_parents A list of integers, output from
-#'     find_possible_parents.
+#'     find_possible_parents or find_possible_parents_stable.
 #' @param outcome Integer, index of the outcome node.
 #' @param n_levels Integer, maximal number of hops from `outcome`.
 #'
@@ -48,7 +48,7 @@ outcome_index <- function(outcome, data) {
   as.integer(outcome)
 }
 
-# Called by causnet() whether or not `outcome` is NULL.
+# Called by causnet() and causnet_stable() whether or not `outcome` is NULL.
 check_n_levels <- function(n_levels) {
   if (length(n_levels) != 1 || !is.numeric(n_levels) ||
       !is.finite(n_levels) || n_levels < 1 || n_levels != round(n_levels)) {

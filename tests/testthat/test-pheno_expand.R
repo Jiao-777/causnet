@@ -56,6 +56,21 @@ test_that("phenotype-driven causnet() only uses the reached nodes", {
   expect_true(all(c(out$network$from, out$network$to) %in% reached))
   expect_identical(causnet(d, alpha = 0.01, outcome = "V12", n_levels = 1)$network,
                    out$network)
+
+  st <- suppressMessages(
+    causnet_stable(d, tau = 2, B = 30, seed = 1, outcome = 12, n_levels = 1)
+  )
+  pp_st <- suppressMessages(
+    find_possible_parents_stable(d, tau = 2, B = 30, seed = 1)
+  )
+  ex_st <- pheno_expand(pp_st, 12L, 1)
+  reached_st <- unique(c(which(!vapply(ex_st, is.null, logical(1))),
+                         unlist(ex_st)))
+  expect_true(all(c(st$network$from, st$network$to) %in% reached_st))
+  st_name <- suppressMessages(
+    causnet_stable(d, tau = 2, B = 30, seed = 1, outcome = "V12", n_levels = 1)
+  )
+  expect_identical(st_name$network, st$network)
 })
 
 test_that("invalid outcome and n_levels are rejected", {
@@ -67,6 +82,9 @@ test_that("invalid outcome and n_levels are rejected", {
   expect_error(causnet(d, outcome = 5, n_levels = 0), "`n_levels` must")
   expect_error(causnet(d, outcome = 5, n_levels = 1.5), "`n_levels` must")
   expect_error(causnet(d, outcome = 5, n_levels = Inf), "`n_levels` must")
+  expect_error(causnet_stable(d, outcome = "V9"), "`outcome` must")
+  expect_error(causnet_stable(d, outcome = 5, n_levels = -1), "`n_levels` must")
   # n_levels is checked even when outcome is NULL (documented)
   expect_error(causnet(d, n_levels = 1.5), "`n_levels` must")
+  expect_error(causnet_stable(d, n_levels = NA), "`n_levels` must")
 })

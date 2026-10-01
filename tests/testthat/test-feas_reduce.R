@@ -1,6 +1,6 @@
-# feasSet reduction: before the dynamic programme, causnet() removes every
-# node that has no candidate parents and is not a candidate parent of any
-# node, and renumbers the remaining nodes.
+# feasSet reduction: before the dynamic programme, causnet() and
+# causnet_stable() remove every node that has no candidate parents and is not
+# a candidate parent of any node, and renumber the remaining nodes.
 
 # (set, sink, score) of every row of the best-sink list, with node indices
 # translated by `map` (index in `d` -> column index of the full data)
@@ -59,7 +59,9 @@ test_that("with fewer than 10 variables the network is the same with and without
   for (seed in 3:6) {
     d <- sparse_dag_data(9, seed = seed)
     pps <- list(
-      find_possible_parents(d, 0.01)
+      find_possible_parents(d, 0.01),
+      suppressMessages(find_possible_parents_stable(d, tau = 2, B = 30,
+                                                    seed = seed))
     )
     for (pp in pps) {
       fr <- feas_reduce(pp)
@@ -77,7 +79,7 @@ test_that("with fewer than 10 variables the network is the same with and without
       expect_identical(reduced$n_best_parents, full$n_best_parents)
     }
   }
-  expect_gte(n_renumbered, 3)
+  expect_gte(n_renumbered, 6)
 })
 
 test_that("causnet() returns an empty network when no variable has candidate parents", {

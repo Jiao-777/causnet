@@ -33,6 +33,19 @@ test_that("causnet() returns a DAG without 2-cycles", {
   expect_true(is_dag(net))
 })
 
+test_that("causnet_stable() returns a DAG without 2-cycles", {
+  set.seed(1)
+  d <- simdat(sample.size = 200, n_var = 8, beta = 0.3)
+  set.seed(1)
+  net <- suppressMessages(
+    causnet_stable(d, tau = 4, pi_thr = 0.6, B = 50, seed = 1)
+  )$network
+
+  expect_gt(nrow(net), 0)
+  expect_false(has_two_cycle(net))
+  expect_true(is_dag(net))
+})
+
 test_that("disconnected components are all returned", {
   set.seed(1)
   d <- cbind(simdat(sample.size = 200, n_var = 3, beta = 0.6),

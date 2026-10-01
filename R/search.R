@@ -1,10 +1,10 @@
 #' Search the best network given candidate parents
 #'
 #' @details
-#' Used by `causnet()`: optional phenotype-driven restriction
-#' (`pheno_expand()`), feasSet reduction (`feas_reduce()`), the dynamic
-#' programme on the reduced problem (`causnet_dp()`), and translation of the
-#' node indices back to the columns of `data`.
+#' Shared by `causnet()` and `causnet_stable()`: optional phenotype-driven
+#' restriction (`pheno_expand()`), feasSet reduction (`feas_reduce()`), the
+#' dynamic programme on the reduced problem (`causnet_dp()`), and translation
+#' of the node indices back to the columns of `data`.
 #'
 #' @param data A data.frame of numeric variables.
 #' @param possible_parents A list of integers, one element per column of
