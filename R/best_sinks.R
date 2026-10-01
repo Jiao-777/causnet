@@ -163,10 +163,15 @@ wsink_scores <- function(w, w_networkscore, pp, po, pps, bps, m, max_parents) {
 }
 
 max_wscore <- function(sinks_tmp) {
-  new_vals <- split(
-      seq_along(sinks_tmp$windx),
-      purrr::map_chr(sinks_tmp$windx, ~ paste(sort(.x), collapse = ""))
-    )
+  # one group per node set; the separator keeps different sets apart (without
+  # it, {1, 112} and {11, 12} would both be "1112")
+  key <- purrr::map_chr(sinks_tmp$windx, ~ paste(sort(.x), collapse = "-"))
+  # the groups keep the order they had when the key had no separator (sorted
+  # by that key); sets that would have shared it follow in order of appearance
+  first <- !duplicated(key)
+  group_order <- order(gsub("-", "", key[first], fixed = TRUE))
+  new_vals <- split(seq_along(key),
+                    factor(key, levels = key[first][group_order]))
   unique(unlist(lapply(new_vals, give_back_max, sinks_tmp$wscore)))
 }
 

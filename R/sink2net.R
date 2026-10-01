@@ -25,7 +25,7 @@ sink2net <- function(bnets, pp, pps, bps, max_parents) {
 
   for (c_index in seq_len(n_comp)) {
     indexes <- bnets$wscore == c_index
-    for (k in max(bnets$k[indexes]):2) {
+    for (k in seq_down_to_2(max(bnets$k[indexes]))) {
       bp_set <- NULL
       tmp <- which(indexes)[bnets$k[indexes] == k]
       if(length(tmp) == 0) break

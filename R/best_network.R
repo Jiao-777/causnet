@@ -42,7 +42,7 @@ find_best_network <- function(bsinks) {
     wlen <- length(w1)
     if (wlen == 0) break
 
-    for (d in wlen:2) {
+    for (d in seq_down_to_2(wlen)) {
       aa <- which(purrr::map_lgl(bsinks$windx, ~ identical(.x, w1)))
 
       if(length(aa) == 0) break
