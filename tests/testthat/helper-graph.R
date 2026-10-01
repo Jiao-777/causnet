@@ -40,3 +40,66 @@ sparse_dag_data <- function(p, n = 300, seed = 1, coef = 0.5) {
   colnames(x) <- paste0("V", seq_len(p))
   as.data.frame(x)
 }
+
+# Total score (score_bic_lm) of a network: every column of `d` with its
+# parents in `net` (columns `from` / `to`), or without parents.
+network_total_score <- function(d, net) {
+  sum(vapply(seq_len(ncol(d)), function(v) {
+    pa <- sort(net$from[net$to == v])
+    score_bic_lm(v, if (length(pa) > 0) pa else NA, d)
+  }, numeric(1)))
+}
+
+# All orderings of the elements of x.
+permutations <- function(x) {
+  if (length(x) <= 1) return(list(x))
+  unlist(lapply(seq_along(x), function(i) {
+    lapply(permutations(x[-i]), function(rest) c(x[i], rest))
+  }), recursive = FALSE)
+}
+
+# Brute force (small p only): best total score (score_bic_lm) over complete
+# generational orderings of the nodes that have candidate parents or are
+# candidate parents in `pp`; the other nodes add their score without parents.
+# In a complete generational ordering every node after the first has a
+# candidate parent before it. Each node takes its best parent set among its
+# candidate parents before it, with at most `max_parents` members (the empty
+# set included). -Inf if no complete generational ordering exists.
+best_generational_score <- function(d, pp, max_parents = 2) {
+  local_score <- function(v, pa) {
+    score_bic_lm(v, if (length(pa) > 0) pa else NA, d)
+  }
+  nodes <- sort(unique(c(which(lengths(pp) > 0), unlist(pp))))
+  sets <- lapply(seq_len(ncol(d)), function(v) {
+    cand <- pp[[v]]
+    out <- list(integer())
+    for (k in seq_len(min(length(cand), max_parents))) {
+      idx <- utils::combn(length(cand), k, simplify = FALSE)
+      out <- c(out, lapply(idx, function(i) cand[i]))
+    }
+    out
+  })
+  scores <- lapply(seq_len(ncol(d)), function(v) {
+    vapply(sets[[v]], function(pa) local_score(v, pa), numeric(1))
+  })
+  rest <- sum(vapply(setdiff(seq_len(ncol(d)), nodes),
+                     function(v) local_score(v, integer()), numeric(1)))
+
+  best <- -Inf
+  for (ord in permutations(nodes)) {
+    total <- 0
+    for (i in seq_along(ord)) {
+      v <- ord[i]
+      before <- ord[seq_len(i - 1)]
+      if (i > 1 && !any(is.element(pp[[v]], before))) {
+        total <- -Inf
+        break
+      }
+      ok <- vapply(sets[[v]], function(pa) all(is.element(pa, before)),
+                   logical(1))
+      total <- total + max(scores[[v]][ok])
+    }
+    best <- max(best, total)
+  }
+  best + rest
+}
