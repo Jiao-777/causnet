@@ -1,5 +1,16 @@
 #' Find globally optimal causal network
 #'
+#' @details
+#' Candidate parents are identified with a Pearson correlation test
+#' (\code{cor.test()} p-value below \code{alpha}).
+#'
+#' Before the dynamic programme, nodes that have no candidate parents and are
+#' not a candidate parent of any node are removed (the feasible set of the
+#' published CausNet code). Such nodes cannot be part of any edge; the search
+#' on the remaining nodes finds the same best sinks with the same scores.
+#' \code{score_fun} is called on the remaining columns of \code{data}, and the
+#' node indices it receives refer to those columns.
+#'
 #' @param data A data.frame of numeric variables.
 #' @param alpha Numerical, p-value threshold to determine cutoff for possible
 #'   parents.
@@ -7,8 +18,13 @@
 #' @param score_fun A function used for scoring parent sets. For more details
 #' see score_fun vignette.
 #'
-#' @return A list with 2 elements: a data data.frame with 3 columns; from, to
-#' and component, and a vector of number of best parents.
+#' @return An object of class \code{causnet}, a list with 3 elements:
+#' \code{network}, a data.frame with 3 columns \code{from}, \code{to} and
+#' \code{component}; \code{n_best_parents}, the number of parents in the best
+#' parent set of each sink; and \code{mutliple_networks}, internal objects
+#' used by \code{\link{return_all_best_networks}} and
+#' \code{\link{return_random_best_networks}}. Node indices in \code{from} and
+#' \code{to} are column indices of \code{data}.
 #' @export
 #'
 #' @examples
@@ -25,43 +41,7 @@ causnet <- function(data, alpha = 0.05, max_parents = 2, score_fun = NULL) {
     score_fun <- score_bic_lm
   }
 
-  # node scores, no parents
-  ms <- no_parent_score(data, score_fun)
   possible_parents <- find_possible_parents(data, alpha)
 
-  # possible offspring
-  possible_offspring <- find_possible_offspring(possible_parents)
-
-  # all sets of possible parents
-  possible_parent_sets <- find_possible_parent_sets(possible_parents,
-                                                    max_parents)
-
-  # scores for all sets of possible parents for each node
-  possible_parent_set_scores <-
-    score_possible_parent_sets(data, possible_parent_sets, score_fun)
-
-  # BEST parent sets and scores for all sets of possible parents for each node
-  bps1 <- best_possible_parent_sets(ms, possible_parent_sets,
-                                    possible_parent_set_scores,
-                                    max_parents)
-
-  # best sinks for all possible connected components
-  best_sinks <- find_best_sinks(possible_parents, ms, possible_offspring,
-                                possible_parent_sets, bps1, max_parents)
-
-  # ordered best sinks for labeled connected components
-  bnsets <- find_best_network(best_sinks)
-
-  # network edges and labeled connected components
-  out <- sink2net(bnsets, possible_parents, possible_parent_sets, bps1,
-                  max_parents)
-
-  out[["mutliple_networks"]] <- list(bnsets = bnsets,
-                                     possible_parents = possible_parents,
-                                     possible_parent_sets = possible_parent_sets,
-                                     bps1 = bps1,
-                                     max_parents = max_parents)
-  names(out[[1]])[1:2] <- c("from", "to")
-  class(out) <- "causnet"
-  out
+  causnet_search(data, possible_parents, max_parents, score_fun)
 }

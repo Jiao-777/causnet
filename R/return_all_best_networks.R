@@ -95,5 +95,9 @@ best_networks_sink2net <- function(network_path, data) {
     }
   }
 
+  # causnet() searches a reduced problem; `feas` maps its node indices back
+  # to the columns of the data
+  mynets$node.source <- as.numeric(data$feas[mynets$node.source])
+  mynets$node.sink <- as.numeric(data$feas[mynets$node.sink])
   mynets
 }
