@@ -38,8 +38,8 @@ An object of class \code{causnet}, a list with 3 elements:
 \code{component}; \code{n_best_parents}, the number of parents in the best
 parent set of each sink; and \code{mutliple_networks}, internal objects
 used by \code{\link{return_all_best_networks}} and
-\code{\link{return_random_best_networks}}. Node indices in \code{from} and
-\code{to} are column indices of \code{data}.
+\code{\link{return_random_best_networks}} (both deprecated). Node indices
+in \code{from} and \code{to} are column indices of \code{data}.
 }
 \description{
 Find globally optimal causal network

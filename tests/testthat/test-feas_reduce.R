@@ -89,7 +89,8 @@ test_that("causnet() returns an empty network when no variable has candidate par
   expect_equal(nrow(out$network), 0)
   expect_named(out$network, c("from", "to", "component"))
   expect_length(out$n_best_parents, 0)
-  expect_length(return_all_best_networks(out), 0)
+  # deprecated; its warning is tested in test-return_best_networks.R
+  expect_length(suppressWarnings(return_all_best_networks(out)), 0)
 })
 
 test_that("return_all_best_networks() uses the column indices of the data", {
@@ -104,7 +105,7 @@ test_that("return_all_best_networks() uses the column indices of the data", {
   out <- causnet(d, alpha = 0.01)
   expect_true(any(c(out$network$from, out$network$to) %in% renumbered))
 
-  nets <- return_all_best_networks(out)
+  nets <- suppressWarnings(return_all_best_networks(out))  # deprecated
   expect_gt(length(nets), 0)
   edges <- paste(out$network$from, out$network$to)
   for (net in nets) {
