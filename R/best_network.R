@@ -24,6 +24,11 @@ find_best_network <- function(bsinks) {
     k <- max(bsinks$k)
 
     aa <- match(k, bsinks$k)
+    if (aa > attr(bsinks, "index")) {
+      stop("Internal error in find_best_network(): the largest `k` is in row ",
+           aa, ", beyond the ", attr(bsinks, "index"),
+           " valid rows of the sink list.", call. = FALSE)
+    }
 
     bestnets <- append_sink_list(bestnets,
                                  bsinks$windx[aa],
