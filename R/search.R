@@ -1,7 +1,8 @@
 #' Search the best network given candidate parents
 #'
 #' @details
-#' Used by `causnet()`: feasSet reduction (`feas_reduce()`), the dynamic
+#' Used by `causnet()`: optional phenotype-driven restriction
+#' (`pheno_expand()`), feasSet reduction (`feas_reduce()`), the dynamic
 #' programme on the reduced problem (`causnet_dp()`), and translation of the
 #' node indices back to the columns of `data`.
 #'
@@ -10,10 +11,17 @@
 #'     `data`, with `NULL` for nodes without candidate parents.
 #' @param max_parents Numeric, maximal number of parents.
 #' @param score_fun A function used for scoring parent sets.
+#' @param outcome `NULL`, or integer index of the outcome column.
+#' @param n_levels Integer, number of hops of the phenotype-driven search.
 #'
 #' @return An object of class `causnet`.
 #' @noRd
-causnet_search <- function(data, possible_parents, max_parents, score_fun) {
+causnet_search <- function(data, possible_parents, max_parents, score_fun,
+                           outcome = NULL, n_levels = 3) {
+  if (!is.null(outcome)) {
+    possible_parents <- pheno_expand(possible_parents, outcome, n_levels)
+  }
+
   fr <- feas_reduce(possible_parents)
 
   if (length(fr$feas) == 0) {

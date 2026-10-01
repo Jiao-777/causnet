@@ -4,7 +4,14 @@
 \alias{causnet}
 \title{Find globally optimal causal network}
 \usage{
-causnet(data, alpha = 0.05, max_parents = 2, score_fun = NULL)
+causnet(
+  data,
+  alpha = 0.05,
+  max_parents = 2,
+  score_fun = NULL,
+  outcome = NULL,
+  n_levels = 3
+)
 }
 \arguments{
 \item{data}{A data.frame of numeric variables.}
@@ -16,6 +23,14 @@ parents.}
 
 \item{score_fun}{A function used for scoring parent sets. For more details
 see score_fun vignette.}
+
+\item{outcome}{\code{NULL} (default) to search the whole graph, or the
+column index or column name of the outcome variable for a
+phenotype-driven search.}
+
+\item{n_levels}{Integer, number of hops from \code{outcome} in the
+phenotype-driven search. Must be a single whole number >= 1; only used
+when \code{outcome} is not \code{NULL}. Defaults to 3.}
 }
 \value{
 An object of class \code{causnet}, a list with 3 elements:
@@ -31,7 +46,14 @@ Find globally optimal causal network
 }
 \details{
 Candidate parents are identified with a Pearson correlation test
-(\code{cor.test()} p-value below \code{alpha}).
+(\code{cor.test()} p-value below \code{alpha}). If \code{outcome} is given,
+the search is phenotype driven: starting from the outcome, candidate-parent
+links are followed for at most \code{n_levels} hops, and only the nodes
+reached this way keep candidate parents (those among the reached nodes);
+the network is then learned on that neighbourhood only. The nodes of the
+last level are not expanded further, but they also keep their candidate
+parents among the reached nodes (for example a node closer to the
+outcome). With \code{outcome = NULL} the whole graph is searched.
 
 Before the dynamic programme, nodes that have no candidate parents and are
 not a candidate parent of any node are removed (the feasible set of the
@@ -44,4 +66,7 @@ node indices it receives refer to those columns.
 set.seed(1)
 new_data <- simdat(n_var = 5)
 out <- causnet(data = new_data, 0.5)
+
+# phenotype-driven search around the last variable
+out <- causnet(data = new_data, 0.5, outcome = 5, n_levels = 2)
 }
